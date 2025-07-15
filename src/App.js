@@ -358,6 +358,7 @@ function App() {
     }, []);
 
     // Fetch runs when userId is available and ensure selectedRun is updated
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (!db || !userId) return;
 
@@ -384,7 +385,6 @@ function App() {
             console.error("Error fetching runs:", error);
         });
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         return () => unsubscribe();
     }, [db, userId, firebaseConfig.projectId]); // Removed 'selectedRun' from dependencies to prevent infinite loop
 
