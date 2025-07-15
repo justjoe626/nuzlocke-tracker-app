@@ -31,6 +31,7 @@ function App() {
     const [newRunVariant, setNewRunVariant] = useState('Nuzlocke'); // Default variant
     const [showPokemonModal, setShowPokemonModal] = useState(false);
     const [currentPokemonEdit, setCurrentPokemonEdit] = useState(null); // For editing existing Pokemon
+    // eslint-disable-next-line no-unused-vars
     const [isAddingNewPokemon, setIsAddingNewPokemon] = useState(false); // To differentiate adding vs editing
     const [pokemonSearchTerm, setPokemonSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
