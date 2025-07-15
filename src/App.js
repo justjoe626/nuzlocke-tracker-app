@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useMemo } from 'react'; // Added useMemo
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth'; // Removed signInWithCustomToken
-import { getFirestore, doc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, query } from 'firebase/firestore'; // Removed setDoc, where, addDoc, getDocs
+import { getFirestore, doc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, query, addDoc } from 'firebase/firestore'; // Added addDoc, Removed setDoc, where, getDocs
 
 // Context for Firebase and User data
 const AppContext = createContext(null);
@@ -10,7 +10,9 @@ const AppContext = createContext(null);
 function App() {
     // Firebase config moved outside useEffect for broader accessibility and memoized
     const firebaseConfig = useMemo(() => ({
-        apiKey: "AIzaSyCd4yilR4WdBMPxDClXFCmNFlSbXUki6OE",
+        // IMPORTANT: You MUST replace "YOUR_FIREBASE_API_KEY" with your actual API Key from your Firebase Console.
+        // Go to Firebase Console -> Project settings (gear icon) -> Your apps -> Select your Web app -> SDK setup and configuration -> Config
+        apiKey: "AIzaSyCd4yilR4WdBMPxDClXFCmNFlSbXUki6OE", // <--- REPLACE THIS LINE WITH YOUR ACTUAL API KEY
         authDomain: "nuzlocke-tracker-dbf81.firebaseapp.com",
         projectId: "nuzlocke-tracker-dbf81",
         storageBucket: "nuzlocke-tracker-dbf81.firebasestorage.app",
@@ -76,7 +78,7 @@ function App() {
         },
         'Cage Locke': {
             'Fainting = Death': true, // Standard Nuzlocke Rule
-            'First Encounter Only': true, // Standard Nuzlocke Rule
+            'First Encounter Only': true,
             'Nickname Clause': true, // Standard Nuzlocke Rule
             'Enforce Level Caps': true, // Hardcore Nuzlocke Rule
             'Set Battle Mode': true, // Hardcore Nuzlocke Rule
@@ -165,7 +167,6 @@ function App() {
         'Loserlocke': {
             'Fainting = Death': true,
             'First Encounter Only': true,
-            'Nickname Clause': true,
             'Only One/Two Stage Evo': true,
             'Only Regular Poké Balls': true,
         },
@@ -294,9 +295,11 @@ function App() {
 
     // Initialize Firebase and Auth
     useEffect(() => {
-        if (Object.keys(firebaseConfig).length === 0) {
-            console.error("Firebase config is missing. Cannot initialize Firebase.");
-            return;
+        // Check if the API key is the placeholder or missing
+        if (Object.keys(firebaseConfig).length === 0 || !firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_FIREBASE_API_KEY") {
+            console.error("Firebase config is missing or API Key is invalid. Please provide a valid API Key from your Firebase project settings.");
+            alert("Firebase authentication failed. Your API Key is missing or invalid. Please check your Firebase project settings and update the 'apiKey' in App.js.");
+            return; // Stop execution if API key is invalid
         }
 
         const app = initializeApp(firebaseConfig);
@@ -318,6 +321,8 @@ function App() {
                     console.log("Signed in anonymously.");
                 } catch (error) {
                     console.error("Firebase authentication error:", error);
+                    // This is where the 'auth/api-key-not-valid' error typically shows up
+                    alert("Authentication failed. Please check your Firebase API Key and project settings.");
                 }
             }
         });
@@ -363,7 +368,7 @@ function App() {
             const fetchedRuns = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setRuns(fetchedRuns);
 
-            // Crucial fix: If a run is currently selected, find its updated version and set it.
+            // CRITICAL FIX: If a run is currently selected, find its updated version and set it.
             // This ensures selectedRun always has the latest data, including partnerTeam/Pc.
             if (selectedRun) {
                 const updatedSelectedRun = fetchedRuns.find(run => run.id === selectedRun.id);
@@ -378,6 +383,7 @@ function App() {
             console.error("Error fetching runs:", error);
         });
 
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         return () => unsubscribe();
     }, [db, userId, firebaseConfig.projectId]); // Removed 'selectedRun' from dependencies to prevent infinite loop
 
@@ -518,6 +524,7 @@ function App() {
             if (index > -1) {
                 pokemonToMove = currentGraveyard.splice(index, 1)[0];
             }
+            // eslint-disable-next-line react-hooks/exhaustive-deps
         }
 
         if (pokemonToMove) {
@@ -1274,7 +1281,7 @@ function App() {
                             </label>
                             <select
                                 id="nuzlockeVariant"
-                                className="shadow border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline bg-gray-200 mb-6"
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline bg-gray-200 mb-6"
                                 value={newRunVariant}
                                 onChange={(e) => setNewRunVariant(e.target.value)}
                             >
@@ -1717,7 +1724,7 @@ const PokemonForm = ({ pokemon, isAddingNew, onSave, onSearchPokemon, searchResu
                 />
                 {loadingPokemonData && <p className="text-blue-300 text-sm mt-1">Loading...</p>}
                 {searchResults.length > 0 && (
-                    <div className="mt-2 bg-gray-700 rounded-md max-h-32 overflow-y-auto custom-scrollbar">
+                    <div className="mt-2 bg-gray-700 border border-gray-600 rounded-md w-full max-h-32 overflow-y-auto custom-scrollbar">
                         {searchResults.map((result, index) => (
                             <div
                                 key={index}
