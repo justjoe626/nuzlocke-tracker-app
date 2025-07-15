@@ -1,15 +1,15 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useMemo } from 'react'; // Added useMemo
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, addDoc, getDocs } from 'firebase/firestore';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth'; // Removed signInWithCustomToken
+import { getFirestore, doc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, query } from 'firebase/firestore'; // Removed setDoc, where, addDoc, getDocs
 
 // Context for Firebase and User data
-const AppContext = createContext(null); // useContext is used indirectly via AppContext.Provider/Consumer pattern
+const AppContext = createContext(null);
 
 // Main App Component
 function App() {
-    // Firebase config moved outside useEffect for broader accessibility
-    const firebaseConfig = {
+    // Firebase config moved outside useEffect for broader accessibility and memoized
+    const firebaseConfig = useMemo(() => ({
         apiKey: "AIzaSyCd4yilR4WdBMPxDClXFCmNFlSbXUki6OE",
         authDomain: "nuzlocke-tracker-dbf81.firebaseapp.com",
         projectId: "nuzlocke-tracker-dbf81",
@@ -17,7 +17,7 @@ function App() {
         messagingSenderId: "947586757526",
         appId: "1:947586757526:web:55079b0330547422e463b7",
         measurementId: "G-C1GVLT4T7V"
-    };
+    }), []); // Empty dependency array ensures it's memoized once
 
     const [db, setDb] = useState(null);
     const [auth, setAuth] = useState(null);
@@ -30,21 +30,21 @@ function App() {
     const [showPokemonModal, setShowPokemonModal] = useState(false);
     const [currentPokemonEdit, setCurrentPokemonEdit] = useState(null); // For editing existing Pokemon
     const [isAddingNewPokemon, setIsAddingNewPokemon] = useState(false); // To differentiate adding vs editing
-    const [pokemonSearchTerm, setPokemonSearchTerm] = useState(''); // Corrected state variable
-    const [searchResults, setSearchResults] = useState([]); // Corrected state variable
-    const [loadingPokemonData, setLoadingPokemonData] = useState(false); // Corrected state variable
-    const [showShareModal, setShowShareModal] = useState(false); // Corrected state variable
-    const [shareLink, setShareLink] = useState(''); // Corrected state variable
-    const [importLink, setImportLink] = useState(''); // Corrected state variable
-    const [showImportModal, setShowImportModal] = useState(false); // Corrected state variable
-    const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false); // Corrected state variable
-    const [runToDelete, setRunToDelete] = useState(null); // Corrected state variable
-    const [showRuleSettingsModal, setShowRuleSettingsModal] = useState(false); // Corrected state variable
-    const [currentRunRules, setCurrentRunRules] = useState({}); // Corrected state variable
-    const [showPerkModal, setShowPerkModal] = useState(false); // Corrected state variable
-    const [pokemonToPerk, setPokemonToPerk] = useState(null); // Corrected state variable
-    const [showLinkPokemonModal, setShowLinkPokemonModal] = useState(false); // Corrected state variable
-    const [showTeamConfigModal, setShowTeamConfigModal] = useState(false); // Corrected state variable
+    const [pokemonSearchTerm, setPokemonSearchTerm] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [loadingPokemonData, setLoadingPokemonData] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [shareLink, setShareLink] = useState('');
+    const [importLink, setImportLink] = useState('');
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
+    const [runToDelete, setRunToDelete] = useState(null);
+    const [showRuleSettingsModal, setShowRuleSettingsModal] = useState(false);
+    const [currentRunRules, setCurrentRunRules] = useState({}); // Rules for the currently selected run
+    const [showPerkModal, setShowPerkModal] = useState(false);
+    const [pokemonToPerk, setPokemonToPerk] = useState(null); // The Pokémon currently being given a perk
+    const [showLinkPokemonModal, setShowLinkPokemonModal] = useState(false);
+    const [showTeamConfigModal, setShowTeamConfigModal] = useState(false);
 
     // State for all abilities and moves for autofill
     const [allAbilities, setAllAbilities] = useState([]);
@@ -363,7 +363,7 @@ function App() {
             const fetchedRuns = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setRuns(fetchedRuns);
 
-            // CRITICAL FIX: If a run is currently selected, find its updated version and set it.
+            // Crucial fix: If a run is currently selected, find its updated version and set it.
             // This ensures selectedRun always has the latest data, including partnerTeam/Pc.
             if (selectedRun) {
                 const updatedSelectedRun = fetchedRuns.find(run => run.id === selectedRun.id);
