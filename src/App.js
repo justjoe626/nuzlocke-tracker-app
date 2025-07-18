@@ -467,8 +467,8 @@ function App() {
             });
             setSelectedRun(prev => ({ ...prev, ...updatedFields }));
             console.log("Run updated successfully.");
-        } catch (e) {
-            console.error("Error updating run: ", e);
+        } catch (error) { // Corrected syntax: 'catch (error)' directly after 'try'
+            console.error("Error updating run: ", error);
         }
     };
 
@@ -921,6 +921,7 @@ function App() {
     };
 
     // Soul Link: Real-time Listener for partner's data (if linked)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (!db || !selectedRun || selectedRun.variant !== 'Soul Link' || !selectedRun.soulLinkPartnerRunId || !selectedRun.soulLinkPartnerUserId) {
             return;
@@ -1357,7 +1358,7 @@ function App() {
                             <p className="text-gray-300 mb-4">Paste your partner's Soul Link here:</p>
                             <input
                                 type="text"
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline bg-gray-200 mb-4"
+                                className="input-field"
                                 value={importLink}
                                 onChange={(e) => setImportLink(e.target.value)}
                                 placeholder="Paste partner's link here..."
@@ -1800,7 +1801,6 @@ const PokemonForm = ({ pokemon, isAddingNew, onSave, onSearchPokemon, searchResu
                     onChange={handleMovesInputChange}
                     onFocus={() => moves.join(', ').split(',').pop().trim().length > 1 && setShowMovesDropdown(true)}
                     onBlur={() => setTimeout(() => setShowMovesDropdown(false), 100)} // Delay to allow click on dropdown
-                    placeholder="e.g., Flamethrower, Fly"
                 />
                 {showMovesDropdown && filteredMoves.length > 0 && (
                     <ul className="absolute z-10 bg-gray-700 border border-gray-600 rounded-md w-full max-h-40 overflow-y-auto custom-scrollbar mt-1">
