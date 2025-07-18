@@ -467,7 +467,7 @@ function App() {
             });
             setSelectedRun(prev => ({ ...prev, ...updatedFields }));
             console.log("Run updated successfully.");
-        } catch (error) { // Corrected syntax: 'catch (error)' directly after 'try'
+        } catch (error) { // This was the problematic line
             console.error("Error updating run: ", error);
         }
     };
@@ -824,7 +824,7 @@ function App() {
         }
         setLoadingPokemonData(true);
         try {
-            const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${term.toLowerCase()}`);
+            const response = await fetch('https://pokeapi.co/api/v2/pokemon/' + term.toLowerCase()); // Use template literal or concatenation
             if (response.ok) {
                 const data = await response.json(); // Declare data here
                 setSearchResults([{ // Corrected to setSearchResults
